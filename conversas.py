@@ -30,27 +30,6 @@ def limpar_texto(texto):
     return [p for p in palavras if p not in STOPWORDS_PT and len(p) > 2]
 
 
-def render_conversas(supabase, groq_client=None, anthropic_client=None):
-    st.subheader("Histórico de Conversas")
-
-    try:
-        result = supabase.table("chat_history").select("*").order("created_at", desc=True).execute()
-        conversas = result.data
-    except Exception as e:
-        st.error(f"Erro ao carregar conversas: {e}")
-        conversas = []
-
-    if not conversas:
-        st.info("Nenhuma conversa registrada ainda.")
-        return
-
-    df = pd.DataFrame(conversas)
-
-    col_a, col_b, col_c = st.columns(3)
-    col_a.metric("Total de mensagens", len(df))
-    col_b.metric("Sessões únicas", df["session_id"].nunique())
-    col_c.metric("Vinculadas a leads", df["lead_id"].notna().sum())
-
 def gerar_grafo_palavras(textos, max_palavras=30):
     co_ocorrencia = Counter()
     frequencia = Counter()
@@ -110,8 +89,29 @@ def gerar_grafo_palavras(textos, max_palavras=30):
     """)
 
     return net
-    
-    
+
+
+def render_conversas(supabase, groq_client=None, anthropic_client=None):
+    st.subheader("Histórico de Conversas")
+
+    try:
+        result = supabase.table("chat_history").select("*").order("created_at", desc=True).execute()
+        conversas = result.data
+    except Exception as e:
+        st.error(f"Erro ao carregar conversas: {e}")
+        conversas = []
+
+    if not conversas:
+        st.info("Nenhuma conversa registrada ainda.")
+        return
+
+    df = pd.DataFrame(conversas)
+
+    col_a, col_b, col_c = st.columns(3)
+    col_a.metric("Total de mensagens", len(df))
+    col_b.metric("Sessões únicas", df["session_id"].nunique())
+    col_c.metric("Vinculadas a leads", df["lead_id"].notna().sum())
+
     st.markdown("---")
 
     col_f1, col_f2 = st.columns(2)
