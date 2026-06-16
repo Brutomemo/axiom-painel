@@ -123,21 +123,22 @@ def render_analytics(supabase):
         )
         st.plotly_chart(fig_origem, use_container_width=True)
 
-    st.markdown("**Faturamento e lucro por empresa**")
+    st.markdown("**Faturamento, custos e lucro por empresa**")
     fin_por_empresa = df_f.groupby("empresa", dropna=True).agg(
         faturamento=("preco_cobrado", "sum"),
+        custos=("custos_projeto", "sum"),
         lucro=("lucro", "sum"),
     ).reset_index().sort_values("faturamento", ascending=False)
 
     if not fin_por_empresa.empty:
         fin_melt = fin_por_empresa.melt(
             id_vars=["empresa"],
-            value_vars=["faturamento", "lucro"],
+            value_vars=["faturamento", "custos", "lucro"],
             var_name="metrica",
             value_name="valor",
         )
         fin_melt["metrica"] = fin_melt["metrica"].map(
-            {"faturamento": "Faturamento", "lucro": "Lucro"}
+            {"faturamento": "Faturamento", "custos": "Custos", "lucro": "Lucro"}
         )
 
         fig_fin = px.bar(
