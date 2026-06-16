@@ -68,25 +68,26 @@ def render_header():
     st.markdown(f"""
         <div class="axiom-header">
             <img src="{LOGO_URL}" alt="AXIOM" />
-            <div>
+            <div style="display: flex; align-items: center; gap: 16px;">
                 <div class="axiom-badge">Painel Interno</div>
-                <p style="
-                    color: #475569;
-                    font-size: 11px;
-                    font-style: italic;
-                    margin: 8px 0 0;
-                    direction: rtl;
-                    text-align: right;
-                ">
-                    בָּרוּךְ אַתָּה ה' אֱ-לֹהֵינוּ מֶלֶךְ הָעוֹלָם
-                </p>
-                <p style="
-                    color: #334155;
-                    font-size: 10px;
-                    margin: 2px 0 0;
-                ">
-                    Baruch Atá Adonai Eloheinu Melech HaOlam
-                </p>
+                <div style="border-left: 1px solid #1a2035; padding-left: 16px;">
+                    <p style="
+                        color: #475569;
+                        font-size: 11px;
+                        font-style: italic;
+                        margin: 0;
+                        direction: rtl;
+                    ">
+                        בָּרוּךְ אַתָּה ה' אֱ-לֹהֵינוּ מֶלֶךְ הָעוֹלָם
+                    </p>
+                    <p style="
+                        color: #334155;
+                        font-size: 10px;
+                        margin: 2px 0 0;
+                    ">
+                        Baruch Atá Adonai Eloheinu Melech HaOlam
+                    </p>
+                </div>
             </div>
         </div>
     """, unsafe_allow_html=True)
