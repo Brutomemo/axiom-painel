@@ -1,0 +1,10 @@
+streamlit==1.37.0
+supabase==2.6.0
+resend==2.0.0
+pandas==2.2.0
+plotly==5.22.0
+wordcloud==1.9.3
+nltk==3.8.1
+groq==0.4.2
+anthropic==0.25.0
+matplotlib==3.9.0
