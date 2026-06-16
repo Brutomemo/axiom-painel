@@ -96,6 +96,8 @@ def render_servicos(supabase):
                 except Exception as e:
                     st.error(f"Erro ao salvar: {e}")
 
+                    
+
     st.markdown("---")
 
     try:
@@ -125,3 +127,114 @@ def render_servicos(supabase):
         "status", "preco_cobrado", "lucro", "mensalidade", "numero_contrato"
     ]
     st.dataframe(df[colunas_exibir], use_container_width=True)
+
+    st.markdown("---")
+    st.subheader("✏️ Editar serviço existente")
+
+    opcoes = {f"{s['id']} — {s['empresa']} ({s['tipo_servico']})": s for s in servicos}
+    selecao = st.selectbox("Selecione o serviço para editar", options=["—"] + list(opcoes.keys()))
+
+    if selecao != "—":
+        servico = opcoes[selecao]
+
+        with st.form("editar_servico"):
+            col1, col2 = st.columns(2)
+
+            with col1:
+                empresa_e = st.text_input("Empresa", value=servico.get("empresa") or "")
+                responsavel_e = st.text_input("Responsável", value=servico.get("responsavel") or "")
+                telefone_e = st.text_input("Telefone", value=servico.get("telefone") or "")
+                email_e = st.text_input("E-mail", value=servico.get("email") or "")
+                endereco_e = st.text_input("Endereço", value=servico.get("endereco") or "")
+                numero_contrato_e = st.text_input("Número do contrato", value=servico.get("numero_contrato") or "")
+
+            with col2:
+                origem_e = st.selectbox(
+                    "Divisão", ["strategic-intelligence", "human-performance"],
+                    index=0 if servico.get("origem") == "strategic-intelligence" else 1
+                )
+                tipo_servico_e = st.text_input("Tipo de serviço", value=servico.get("tipo_servico") or "")
+
+                def parse_date(value):
+                    if not value:
+                        return None
+                    return date.fromisoformat(value) if isinstance(value, str) else value
+
+                data_solicitacao_e = st.date_input(
+                    "Data da solicitação", value=parse_date(servico.get("data_solicitacao"))
+                )
+                data_entrega_1_e = st.date_input(
+                    "Data entrega 1 / início treinamento", value=parse_date(servico.get("data_entrega_1"))
+                )
+                data_entrega_2_prevista_e = st.date_input(
+                    "Data prevista entrega 2 / fim treinamento",
+                    value=parse_date(servico.get("data_entrega_2_prevista"))
+                )
+                data_entrega_2_real_e = st.date_input(
+                    "Data real de conclusão", value=parse_date(servico.get("data_entrega_2_real"))
+                )
+
+            st.markdown("---")
+            col3, col4, col5, col6 = st.columns(4)
+            with col3:
+                preco_cobrado_e = st.number_input(
+                    "Preço cobrado (R$)", min_value=0.0, step=100.0,
+                    value=float(servico.get("preco_cobrado") or 0)
+                )
+            with col4:
+                custos_projeto_e = st.number_input(
+                    "Custos do projeto (R$)", min_value=0.0, step=100.0,
+                    value=float(servico.get("custos_projeto") or 0)
+                )
+            with col5:
+                mensalidade_e = st.number_input(
+                    "Mensalidade (R$)", min_value=0.0, step=50.0,
+                    value=float(servico.get("mensalidade") or 0)
+                )
+            with col6:
+                concluido_e = st.checkbox("Concluído", value=servico.get("concluido") or False)
+
+            observacoes_e = st.text_area("Observações", value=servico.get("observacoes") or "")
+
+            col_save, col_delete = st.columns(2)
+            salvar = col_save.form_submit_button("💾 Salvar alterações")
+            deletar = col_delete.form_submit_button("🗑️ Excluir serviço")
+
+            if salvar:
+                lucro_e = preco_cobrado_e - custos_projeto_e
+                status_e = calcular_status(data_entrega_2_prevista_e, data_entrega_2_real_e, concluido_e)
+
+                try:
+                    supabase.table("servicos_prestados").update({
+                        "empresa": empresa_e,
+                        "responsavel": responsavel_e,
+                        "telefone": telefone_e,
+                        "email": email_e,
+                        "endereco": endereco_e,
+                        "tipo_servico": tipo_servico_e,
+                        "origem": origem_e,
+                        "numero_contrato": numero_contrato_e,
+                        "data_solicitacao": data_solicitacao_e.isoformat() if data_solicitacao_e else None,
+                        "data_entrega_1": data_entrega_1_e.isoformat() if data_entrega_1_e else None,
+                        "data_entrega_2_prevista": data_entrega_2_prevista_e.isoformat() if data_entrega_2_prevista_e else None,
+                        "data_entrega_2_real": data_entrega_2_real_e.isoformat() if data_entrega_2_real_e else None,
+                        "preco_cobrado": preco_cobrado_e,
+                        "custos_projeto": custos_projeto_e,
+                        "lucro": lucro_e,
+                        "mensalidade": mensalidade_e,
+                        "concluido": concluido_e,
+                        "status": status_e,
+                        "observacoes": observacoes_e,
+                    }).eq("id", servico["id"]).execute()
+                    st.success("Serviço atualizado com sucesso!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Erro ao atualizar: {e}")
+
+            if deletar:
+                try:
+                    supabase.table("servicos_prestados").delete().eq("id", servico["id"]).execute()
+                    st.success("Serviço excluído.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Erro ao excluir: {e}")
