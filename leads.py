@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from style import ORIGEM_COLORS, style_chart
 
 
 def render_leads(supabase):
@@ -56,45 +57,38 @@ def render_leads(supabase):
         fig_pizza = px.pie(
             origem_counts, names="origem", values="quantidade",
             color="origem",
-            color_discrete_map={
-                "strategic-intelligence": "#d47406",
-                "human-performance": "#11c5fc",
-            },
+            color_discrete_map=ORIGEM_COLORS,
             hole=0.4,
         )
-        fig_pizza.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font_color="#94a3b8",
-            legend=dict(font=dict(color="#94a3b8")),
-            height=320,
-            margin=dict(t=20, b=20, l=20, r=20),
-        )
+        style_chart(fig_pizza)
         st.plotly_chart(fig_pizza, use_container_width=True)
 
     with col_g2:
         st.markdown("**Leads por empresa**")
-        empresa_counts = df_filtrado["empresa"].dropna().value_counts().reset_index()
-        empresa_counts.columns = ["empresa", "quantidade"]
-
-        altura_dinamica = max(320, 28 * len(empresa_counts))
-
-        fig_barras = px.bar(
-            empresa_counts.sort_values("quantidade", ascending=True),
-            x="quantidade", y="empresa",
-            orientation="h",
-            color_discrete_sequence=["#06b6d4"],
+        empresa_origem_counts = (
+            df_filtrado.dropna(subset=["empresa"])
+            .groupby(["empresa", "origem"])
+            .size()
+            .reset_index(name="quantidade")
         )
-        fig_barras.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font_color="#94a3b8",
-            xaxis=dict(gridcolor="#1a2035"),
-            yaxis=dict(gridcolor="#1a2035"),
-            height=altura_dinamica,
-            margin=dict(t=20, b=20, l=20, r=20),
+        ordem_empresas = (
+            empresa_origem_counts.groupby("empresa")["quantidade"]
+            .sum()
+            .sort_values(ascending=False)
+            .index.tolist()
         )
-        st.plotly_chart(fig_barras, use_container_width=True)
+
+        fig_colunas = px.bar(
+            empresa_origem_counts,
+            x="empresa",
+            y="quantidade",
+            color="origem",
+            color_discrete_map=ORIGEM_COLORS,
+            barmode="stack",
+            category_orders={"empresa": ordem_empresas},
+        )
+        style_chart(fig_colunas, grid_axes=True)
+        st.plotly_chart(fig_colunas, use_container_width=True)
 
     st.markdown("---")
     st.markdown(f"**Lista de leads** ({len(df_filtrado)} resultado(s))")

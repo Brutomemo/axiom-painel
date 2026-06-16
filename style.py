@@ -2,6 +2,28 @@ import streamlit as st
 
 LOGO_URL = "https://twzzolhitqypdosweqnj.supabase.co/storage/v1/object/public/axiom_backend/imagem_email/logo-email.png"
 
+ORIGEM_COLORS = {
+    "strategic-intelligence": "#d47406",
+    "human-performance": "#11c5fc",
+}
+
+
+def style_chart(fig, height=320, legend=True, grid_axes=False):
+    layout = {
+        "paper_bgcolor": "rgba(0,0,0,0)",
+        "plot_bgcolor": "rgba(0,0,0,0)",
+        "font_color": "#94a3b8",
+        "height": height,
+        "margin": dict(t=20, b=20, l=20, r=20),
+    }
+    if legend:
+        layout["legend"] = dict(font=dict(color="#94a3b8"))
+    if grid_axes:
+        layout["xaxis"] = dict(gridcolor="#1a2035")
+        layout["yaxis"] = dict(gridcolor="#1a2035")
+    fig.update_layout(**layout)
+    return fig
+
 def apply_axiom_style():
     st.markdown("""
         <style>
@@ -60,6 +82,12 @@ def apply_axiom_style():
             letter-spacing: 2px;
             text-transform: uppercase;
             font-weight: 600;
+        }
+        div[data-testid="stPlotlyChart"] {
+            background-color: transparent;
+        }
+        div[data-testid="stPlotlyChart"] .js-plotly-plot .plotly .legend {
+            font-size: 12px;
         }
         </style>
     """, unsafe_allow_html=True)
