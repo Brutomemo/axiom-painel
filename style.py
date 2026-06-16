@@ -1,6 +1,6 @@
 import streamlit as st
 
-LOGO_URL = "https://twzzolhitqypdosweqnj.supabase.co/storage/v1/object/public/axiom_backend/imagem_email/logo-nav.webp"
+LOGO_URL = "https://twzzolhitqypdosweqnj.supabase.co/storage/v1/object/public/axiom_backend/imagem_email/logo-email.png"
 
 def apply_axiom_style():
     st.markdown("""
