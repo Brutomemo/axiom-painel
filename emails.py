@@ -62,10 +62,11 @@ def render_emails(supabase):
             corpo_html = email.get("corpo_html")
             corpo_texto = email.get("corpo_texto")
             if corpo_html:
-                st.markdown(
-                    f'<div style="background:#0d0f18;border:1px solid #1a2035;'
-                    f'border-radius:8px;padding:16px;color:#94a3b8;">{corpo_html}</div>',
-                    unsafe_allow_html=True
+                st.components.v1.html(
+                    f'<div style="background:#fff;color:#111;padding:16px;'
+                    f'font-family:Arial,sans-serif;border-radius:8px;">{corpo_html}</div>',
+                    height=400,
+                    scrolling=True,
                 )
             else:
                 st.text(corpo_texto or "(sem conteúdo)")
