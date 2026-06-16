@@ -2,6 +2,7 @@ import streamlit as st
 from style import apply_axiom_style, render_header, render_footer
 from servicos import render_servicos
 from emails import render_emails
+from leads import render_leads
 
 st.set_page_config(page_title="AXIOM Painel", page_icon="◆", layout="wide")
 apply_axiom_style()
@@ -87,8 +88,7 @@ with tab_emails:
     render_emails(supabase)
 
 with tab_leads:
-    st.subheader("Leads")
-    st.info("Em construção — próximo passo")
+    render_leads(supabase)
 
 with tab_chat:
     st.subheader("Histórico de conversas")
