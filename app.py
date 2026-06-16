@@ -6,6 +6,7 @@ from leads import render_leads
 from conversas import render_conversas
 from groq import Groq
 from anthropic import Anthropic
+from analytics import render_analytics
 
 st.set_page_config(page_title="AXIOM Painel", page_icon="◆", layout="wide")
 apply_axiom_style()
@@ -119,6 +120,5 @@ with tab_servicos:
     render_servicos(supabase)
 
 with tab_analytics:
-    st.subheader("Análise geral")
-    st.info("Em construção — próximo passo")
+    render_analytics(supabase)
 render_footer()
