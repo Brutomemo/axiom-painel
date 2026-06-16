@@ -10,3 +10,5 @@ nltk==3.9.1
 groq==0.4.2
 anthropic==0.25.0
 matplotlib>=3.10.0,<4
+pyvis==0.3.2
+networkx==3.3

@@ -3,6 +3,10 @@ import pandas as pd
 import plotly.express as px
 import re
 from collections import Counter
+import tempfile
+from itertools import combinations
+from pyvis.network import Network
+import networkx as nx
 
 STOPWORDS_PT = {
     "a", "o", "as", "os", "de", "da", "do", "das", "dos", "em", "na", "no",
@@ -47,6 +51,67 @@ def render_conversas(supabase, groq_client=None, anthropic_client=None):
     col_b.metric("Sessões únicas", df["session_id"].nunique())
     col_c.metric("Vinculadas a leads", df["lead_id"].notna().sum())
 
+def gerar_grafo_palavras(textos, max_palavras=30):
+    co_ocorrencia = Counter()
+    frequencia = Counter()
+
+    for texto in textos:
+        palavras = list(set(limpar_texto(texto)))
+        frequencia.update(palavras)
+        for par in combinations(sorted(palavras), 2):
+            co_ocorrencia[par] += 1
+
+    top_palavras = {p for p, _ in frequencia.most_common(max_palavras)}
+    if not top_palavras:
+        return None
+
+    G = nx.Graph()
+    for palavra in top_palavras:
+        G.add_node(palavra, size=frequencia[palavra])
+
+    for (p1, p2), peso in co_ocorrencia.items():
+        if p1 in top_palavras and p2 in top_palavras and peso > 0:
+            G.add_edge(p1, p2, weight=peso)
+
+    if G.number_of_nodes() == 0:
+        return None
+
+    net = Network(
+        height="420px", width="100%",
+        bgcolor="#07080d", font_color="#e2e8f0",
+        notebook=False,
+    )
+
+    max_freq = max(frequencia[p] for p in top_palavras)
+
+    for palavra in top_palavras:
+        freq = frequencia[palavra]
+        tamanho = 14 + (freq / max_freq) * 36
+        intensidade = freq / max_freq
+        cor = f"rgba(6,182,212,{0.4 + intensidade * 0.6})" if intensidade > 0.5 else f"rgba(168,85,247,{0.4 + intensidade * 0.6})"
+        net.add_node(
+            palavra, label=palavra, size=tamanho,
+            color=cor, font={"color": "#e2e8f0", "size": 16},
+        )
+
+    for (p1, p2), peso in co_ocorrencia.items():
+        if p1 in top_palavras and p2 in top_palavras:
+            net.add_edge(p1, p2, value=peso, color="rgba(148,163,184,0.25)")
+
+    net.set_options("""
+    {
+      "physics": {
+        "forceAtlas2Based": {"gravitationalConstant": -50, "springLength": 100},
+        "solver": "forceAtlas2Based",
+        "stabilization": {"iterations": 150}
+      },
+      "interaction": {"hover": true}
+    }
+    """)
+
+    return net
+    
+    
     st.markdown("---")
 
     col_f1, col_f2 = st.columns(2)
@@ -84,28 +149,40 @@ def render_conversas(supabase, groq_client=None, anthropic_client=None):
         st.plotly_chart(fig_modelo, use_container_width=True)
 
     with col_g2:
-        st.markdown("**Top palavras-chave (perguntas dos clientes)**")
-        todas_palavras = []
-        for msg in df_filtrado["user_message"].dropna():
-            todas_palavras.extend(limpar_texto(msg))
+        st.markdown("**Rede de palavras-chave (conversas filtradas)**")
+        st.caption("Tamanho = frequência · Conexões = co-ocorrência na mesma mensagem")
 
-        if todas_palavras:
-            contagem = Counter(todas_palavras).most_common(15)
-            top_df = pd.DataFrame(contagem, columns=["palavra", "frequência"])
-            fig_palavras = px.bar(
-                top_df.sort_values("frequência"), x="frequência", y="palavra",
-                orientation="h",
-                color_discrete_sequence=["#a855f7"],
-            )
-            fig_palavras.update_layout(
-                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                font_color="#94a3b8",
-                xaxis=dict(gridcolor="#1a2035"), yaxis=dict(gridcolor="#1a2035"),
-                height=max(320, 24 * len(top_df)),
-            )
-            st.plotly_chart(fig_palavras, use_container_width=True)
+        textos_validos = df_filtrado["user_message"].dropna().tolist()
+
+        if textos_validos:
+            net = gerar_grafo_palavras(textos_validos)
+            if net is None:
+                st.info("Sem dados suficientes para gerar o grafo.")
+            else:
+                with tempfile.NamedTemporaryFile(mode="w", suffix=".html", delete=False) as f:
+                    temp_file = f.name
+                net.write_html(temp_file, notebook=False)
+                with open(temp_file, "r", encoding="utf-8") as f:
+                    html_content = f.read()
+
+                html_content = html_content.replace(
+                    "<style type=\"text/css\">",
+                    """<style type="text/css">
+                    html, body {
+                        margin: 0;
+                        padding: 0;
+                        background: #07080d !important;
+                    }
+                    #mynetwork {
+                        background: #07080d !important;
+                        border: 1px solid #1a2035;
+                        border-radius: 12px;
+                    }
+                    """
+                )
+                st.components.v1.html(html_content, height=440, scrolling=False)
         else:
-            st.info("Sem dados suficientes para análise de palavras.")
+            st.info("Sem dados suficientes para análise.")
 
     st.markdown("---")
 
