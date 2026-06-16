@@ -1,4 +1,4 @@
-# Deploy atual — só o que o app usa hoje (app.py + style.py).
-# Streamlit Cloud: Settings → Python version → 3.12
-streamlit==1.37.0
+# Streamlit Cloud (2026): use Python 3.12 em Settings → Python version.
+# streamlit 1.37.0 conflita com o ambiente do Cloud (rich, packaging, pillow).
+streamlit>=1.54.0
 supabase==2.6.0
