@@ -1,5 +1,6 @@
 import streamlit as st
-from style import apply_axiom_style, render_header
+from style import apply_axiom_style, render_header, render_footer
+from servicos import render_servicos
 
 st.set_page_config(page_title="AXIOM Painel", page_icon="◆", layout="wide")
 apply_axiom_style()

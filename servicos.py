@@ -1,6 +1,7 @@
 import streamlit as st
 from datetime import date
 
+
 def calcular_status(data_entrega_2_prevista, data_entrega_2_real, concluido):
     if concluido:
         return "concluído"
