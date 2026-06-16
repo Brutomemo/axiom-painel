@@ -1,7 +1,10 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
+import numpy as np
 from datetime import date
+from style import FINANCE_COLORS, TREND_DATA_COLOR, TREND_LINE_COLOR, style_chart
 
 
 def render_analytics(supabase):
@@ -124,22 +127,30 @@ def render_analytics(supabase):
     fin_por_empresa = df_f.groupby("empresa", dropna=True).agg(
         faturamento=("preco_cobrado", "sum"),
         lucro=("lucro", "sum"),
-    ).reset_index().sort_values("faturamento", ascending=True)
+    ).reset_index().sort_values("faturamento", ascending=False)
 
     if not fin_por_empresa.empty:
-        altura_dinamica = max(320, 28 * len(fin_por_empresa))
+        fin_melt = fin_por_empresa.melt(
+            id_vars=["empresa"],
+            value_vars=["faturamento", "lucro"],
+            var_name="metrica",
+            value_name="valor",
+        )
+        fin_melt["metrica"] = fin_melt["metrica"].map(
+            {"faturamento": "Faturamento", "lucro": "Lucro"}
+        )
+
         fig_fin = px.bar(
-            fin_por_empresa, x=["faturamento", "lucro"], y="empresa",
-            orientation="h", barmode="group",
-            color_discrete_sequence=["#06b6d4", "#22c55e"],
+            fin_melt,
+            x="empresa",
+            y="valor",
+            color="metrica",
+            barmode="group",
+            color_discrete_map=FINANCE_COLORS,
+            labels={"valor": "Valor (R$)", "metrica": "", "empresa": "Empresa"},
+            category_orders={"empresa": fin_por_empresa["empresa"].tolist()},
         )
-        fig_fin.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-            font_color="#94a3b8",
-            xaxis=dict(gridcolor="#1a2035"), yaxis=dict(gridcolor="#1a2035"),
-            height=altura_dinamica,
-            legend=dict(font=dict(color="#94a3b8"), title=""),
-        )
+        style_chart(fig_fin, grid_axes=True)
         st.plotly_chart(fig_fin, use_container_width=True)
 
     # ── LINHA DO TEMPO DE FATURAMENTO ──
@@ -147,17 +158,44 @@ def render_analytics(supabase):
     df_tempo = df_f.dropna(subset=["data_solicitacao"]).copy()
     if not df_tempo.empty:
         df_tempo["mes"] = df_tempo["data_solicitacao"].dt.to_period("M").astype(str)
-        faturamento_mensal = df_tempo.groupby("mes")["preco_cobrado"].sum().reset_index()
-        fig_tempo = px.bar(
-            faturamento_mensal, x="mes", y="preco_cobrado",
-            color_discrete_sequence=["#06b6d4"],
+        faturamento_mensal = (
+            df_tempo.groupby("mes")["preco_cobrado"]
+            .sum()
+            .reset_index()
+            .sort_values("mes")
         )
+
+        fig_tempo = go.Figure()
+        fig_tempo.add_trace(
+            go.Scatter(
+                x=faturamento_mensal["mes"],
+                y=faturamento_mensal["preco_cobrado"],
+                mode="lines+markers",
+                name="Faturamento",
+                line=dict(color=TREND_DATA_COLOR, width=2),
+                marker=dict(color=TREND_DATA_COLOR, size=7),
+            )
+        )
+
+        if len(faturamento_mensal) >= 2:
+            x_numeric = np.arange(len(faturamento_mensal))
+            coef = np.polyfit(x_numeric, faturamento_mensal["preco_cobrado"], 1)
+            tendencia = np.poly1d(coef)(x_numeric)
+            fig_tempo.add_trace(
+                go.Scatter(
+                    x=faturamento_mensal["mes"],
+                    y=tendencia,
+                    mode="lines",
+                    name="Tendência",
+                    line=dict(color=TREND_LINE_COLOR, width=2, dash="dash"),
+                )
+            )
+
         fig_tempo.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-            font_color="#94a3b8",
-            xaxis=dict(gridcolor="#1a2035"), yaxis=dict(gridcolor="#1a2035"),
-            height=320,
+            xaxis_title="Mês",
+            yaxis_title="Faturamento (R$)",
         )
+        style_chart(fig_tempo, grid_axes=True)
         st.plotly_chart(fig_tempo, use_container_width=True)
     else:
         st.info("Sem datas de solicitação suficientes para a linha do tempo.")
