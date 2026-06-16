@@ -83,7 +83,7 @@ def render_footer():
             text-align: center;
         ">
             <p style="
-                color: #475569;
+                color: #94A3B8;
                 font-size: 12px;
                 font-style: italic;
                 margin: 0 0 8px;
