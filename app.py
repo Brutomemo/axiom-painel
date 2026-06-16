@@ -3,6 +3,9 @@ from style import apply_axiom_style, render_header, render_footer
 from servicos import render_servicos
 from emails import render_emails
 from leads import render_leads
+from conversas import render_conversas
+from groq import Groq
+from anthropic import Anthropic
 
 st.set_page_config(page_title="AXIOM Painel", page_icon="◆", layout="wide")
 apply_axiom_style()
@@ -55,6 +58,25 @@ def check_password():
     else:
         return True
 
+@st.cache_resource
+def get_ai_clients():
+    groq = None
+    anthropic = None
+    try:
+        if "GROQ_API_KEY" in st.secrets:
+            groq = Groq(api_key=st.secrets["GROQ_API_KEY"])
+    except Exception:
+        pass
+    try:
+        if "ANTHROPIC_API_KEY" in st.secrets:
+            anthropic = Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
+    except Exception:
+        pass
+    return groq, anthropic
+
+groq_client, anthropic_client = get_ai_clients()
+
+
 
 @st.cache_resource
 def get_supabase():
@@ -91,14 +113,7 @@ with tab_leads:
     render_leads(supabase)
 
 with tab_chat:
-    st.subheader("Histórico de conversas")
-    st.info("Em construção — próximo passo")
-
-with tab_analytics:
-    st.subheader("Análise geral")
-    st.info("Em construção — próximo passo")
-
-from style import apply_axiom_style, render_header, render_footer
+    render_conversas(supabase, groq_client, anthropic_client)
 
 with tab_servicos:
     render_servicos(supabase)
@@ -106,5 +121,4 @@ with tab_servicos:
 with tab_analytics:
     st.subheader("Análise geral")
     st.info("Em construção — próximo passo")
-
 render_footer()
