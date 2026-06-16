@@ -81,7 +81,7 @@ def render_header():
                         בָּרוּךְ אַתָּה ה' אֱ-לֹהֵינוּ מֶלֶךְ הָעוֹלָם
                     </p>
                     <p style="
-                        color: #475569;
+                        color: #94A3B8;
                         font-size: 10px;
                         margin: 2px 0 0;
                     ">
