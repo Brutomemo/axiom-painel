@@ -7,6 +7,14 @@ ORIGEM_COLORS = {
     "human-performance": "#11c5fc",
 }
 
+FINANCE_COLORS = {
+    "Faturamento": "#64748b",
+    "Lucro": "#78889a",
+}
+
+TREND_LINE_COLOR = "#475569"
+TREND_DATA_COLOR = "#64748b"
+
 
 def style_chart(fig, height=320, legend=True, grid_axes=False):
     layout = {
