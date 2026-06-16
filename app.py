@@ -96,3 +96,12 @@ with tab_chat:
 with tab_analytics:
     st.subheader("Análise geral")
     st.info("Em construção — próximo passo")
+
+from style import apply_axiom_style, render_header, render_footer
+# ... (resto do código permanece igual)
+
+with tab_analytics:
+    st.subheader("Análise geral")
+    st.info("Em construção — próximo passo")
+
+render_footer()
