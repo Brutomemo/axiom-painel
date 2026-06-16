@@ -47,11 +47,11 @@ def render_leads(supabase):
 
     st.markdown("---")
 
-    col_g1, col_g2 = st.columns(2)
+    col_g1, col_g2 = st.columns([1, 2])
 
     with col_g1:
         st.markdown("**Origem dos leads**")
-        origem_counts = df["origem"].value_counts().reset_index()
+        origem_counts = df_filtrado["origem"].value_counts().reset_index()
         origem_counts.columns = ["origem", "quantidade"]
         fig_pizza = px.pie(
             origem_counts, names="origem", values="quantidade",
@@ -67,15 +67,22 @@ def render_leads(supabase):
             plot_bgcolor="rgba(0,0,0,0)",
             font_color="#94a3b8",
             legend=dict(font=dict(color="#94a3b8")),
+            height=320,
+            margin=dict(t=20, b=20, l=20, r=20),
         )
         st.plotly_chart(fig_pizza, use_container_width=True)
 
     with col_g2:
         st.markdown("**Leads por empresa**")
-        empresa_counts = df["empresa"].dropna().value_counts().reset_index()
+        empresa_counts = df_filtrado["empresa"].dropna().value_counts().reset_index()
         empresa_counts.columns = ["empresa", "quantidade"]
+
+        altura_dinamica = max(320, 28 * len(empresa_counts))
+
         fig_barras = px.bar(
-            empresa_counts.head(15), x="empresa", y="quantidade",
+            empresa_counts.sort_values("quantidade", ascending=True),
+            x="quantidade", y="empresa",
+            orientation="h",
             color_discrete_sequence=["#06b6d4"],
         )
         fig_barras.update_layout(
@@ -84,6 +91,8 @@ def render_leads(supabase):
             font_color="#94a3b8",
             xaxis=dict(gridcolor="#1a2035"),
             yaxis=dict(gridcolor="#1a2035"),
+            height=altura_dinamica,
+            margin=dict(t=20, b=20, l=20, r=20),
         )
         st.plotly_chart(fig_barras, use_container_width=True)
 
