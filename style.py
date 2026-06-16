@@ -83,7 +83,7 @@ def render_footer():
             text-align: center;
         ">
             <p style="
-                color: #334155;
+                color: #475569;
                 font-size: 12px;
                 font-style: italic;
                 margin: 0 0 8px;
@@ -92,14 +92,14 @@ def render_footer():
                 שיהיה שלום, אושר והצלחה בכל החלטה ובכל לקוח שייכנס למקום הזה
             </p>
             <p style="
-                color: #1e293b;
+                color: #334155;
                 font-size: 11px;
                 margin: 0 0 16px;
             ">
                 Que haja paz, felicidade e sucesso em cada decisão e em cada cliente que entrar neste lugar
             </p>
             <p style="
-                color: #1e293b;
+                color: #334155;
                 font-size: 11px;
                 letter-spacing: 1px;
                 text-transform: uppercase;
