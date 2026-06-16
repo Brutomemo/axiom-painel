@@ -72,7 +72,7 @@ def render_header():
                 <div class="axiom-badge">Painel Interno</div>
                 <div style="border-left: 1px solid #1a2035; padding-left: 16px;">
                     <p style="
-                        color: #475569;
+                        color: #94A3B8;
                         font-size: 11px;
                         font-style: italic;
                         margin: 0;

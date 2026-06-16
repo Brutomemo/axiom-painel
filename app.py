@@ -77,8 +77,8 @@ supabase = get_supabase()
 
 render_header()
 
-tab_emails, tab_leads, tab_chat, tab_analytics = st.tabs(
-    ["📧 E-mails", "🎯 Leads", "💬 Conversas", "📊 Analytics"]
+tab_emails, tab_leads, tab_chat, tab_servicos, tab_analytics = st.tabs(
+    ["📧 E-mails", "🎯 Leads", "💬 Conversas", "🛠️ Serviços", "📊 Analytics"]
 )
 
 with tab_emails:
@@ -98,7 +98,9 @@ with tab_analytics:
     st.info("Em construção — próximo passo")
 
 from style import apply_axiom_style, render_header, render_footer
-# ... (resto do código permanece igual)
+
+with tab_servicos:
+    render_servicos(supabase)
 
 with tab_analytics:
     st.subheader("Análise geral")
