@@ -74,38 +74,38 @@ def render_header():
         </div>
     """, unsafe_allow_html=True)
 
-    def render_footer():
-    st.markdown("""
-        <div style="
-            margin-top: 48px;
-            padding: 24px 0;
-            border-top: 1px solid #1a2035;
-            text-align: center;
+def render_footer():
+st.markdown("""
+    <div style="
+        margin-top: 48px;
+        padding: 24px 0;
+        border-top: 1px solid #1a2035;
+        text-align: center;
+    ">
+        <p style="
+            color: #334155;
+            font-size: 12px;
+            font-style: italic;
+            margin: 0 0 8px;
+            direction: rtl;
         ">
-            <p style="
-                color: #334155;
-                font-size: 12px;
-                font-style: italic;
-                margin: 0 0 8px;
-                direction: rtl;
-            ">
-                שיהיה שלום, אושר והצלחה בכל החלטה ובכל לקוח שייכנס למקום הזה
-            </p>
-            <p style="
-                color: #1e293b;
-                font-size: 11px;
-                margin: 0 0 16px;
-            ">
-                Que haja paz, felicidade e sucesso em cada decisão e em cada cliente que entrar neste lugar
-            </p>
-            <p style="
-                color: #1e293b;
-                font-size: 11px;
-                letter-spacing: 1px;
-                text-transform: uppercase;
-                margin: 0;
-            ">
-                AXIOM 2026 · Desenvolvido por AXIOM Strategic Intelligence · Todos os direitos reservados
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
+            שיהיה שלום, אושר והצלחה בכל החלטה ובכל לקוח שייכנס למקום הזה
+        </p>
+        <p style="
+            color: #1e293b;
+            font-size: 11px;
+            margin: 0 0 16px;
+        ">
+            Que haja paz, felicidade e sucesso em cada decisão e em cada cliente que entrar neste lugar
+        </p>
+        <p style="
+            color: #1e293b;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin: 0;
+        ">
+            AXIOM 2026 · Desenvolvido por AXIOM Strategic Intelligence · Todos os direitos reservados
+        </p>
+    </div>
+""", unsafe_allow_html=True)
