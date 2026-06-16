@@ -8,9 +8,9 @@ ORIGEM_COLORS = {
 }
 
 FINANCE_COLORS = {
-    "Faturamento": "#9caec4",
-    "Custos": "#c49a6c",
-    "Lucro": "#7dab8c",
+    "Faturamento": "#d47406",
+    "Custos": "#9caec4",
+    "Lucro": "#c49a6c",
 }
 
 TREND_LINE_COLOR = "#475569"
