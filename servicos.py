@@ -129,7 +129,7 @@ def render_servicos(supabase):
     st.dataframe(df[colunas_exibir], use_container_width=True)
 
     st.markdown("---")
-    st.subheader("✏️ Editar serviço existente")
+    st.subheader("Editar serviço existente")
 
     opcoes = {f"{s['id']} — {s['empresa']} ({s['tipo_servico']})": s for s in servicos}
     selecao = st.selectbox("Selecione o serviço para editar", options=["—"] + list(opcoes.keys()))
