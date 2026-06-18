@@ -31,6 +31,13 @@ def render_agenda(supabase):
         servicos_opcoes = {}
 
     with st.expander("➕ Novo compromisso", expanded=False):
+
+        # Checkbox FORA do form para reagir imediatamente ao clique
+        multiplos_dias = st.checkbox(
+            "Compromisso em mais de um dia",
+            key="novo_multiplos_dias"
+        )
+
         with st.form("novo_compromisso", clear_on_submit=True):
             col1, col2 = st.columns(2)
             with col1:
@@ -41,9 +48,8 @@ def render_agenda(supabase):
             with col2:
                 data_inicio_compromisso = st.date_input("Data de início", value=date.today())
                 hora_inicio = st.time_input("Hora de início", value=time(9, 0))
-                multiplos_dias = st.checkbox("Compromisso em mais de um dia")
                 if multiplos_dias:
-                    data_fim_compromisso = st.date_input("Data de término", value=date.today())
+                    data_fim_compromisso = st.date_input("Data de término", value=date.today(), key="data_fim_novo")
                 else:
                     data_fim_compromisso = data_inicio_compromisso
                 hora_fim = st.time_input("Hora de término", value=time(10, 0))
