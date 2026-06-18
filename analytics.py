@@ -215,7 +215,7 @@ def render_analytics(supabase):
     st.markdown("---")
 
     # ── CONTROLE DE PRAZOS ──
-    st.markdown("##Controle de prazos")
+    st.markdown("## Controle de prazos")
 
     df_prazos = df_f[df_f["status"] != "concluído"].copy()
     if not df_prazos.empty:
@@ -257,7 +257,7 @@ def render_analytics(supabase):
     st.markdown("---")
 
     st.markdown("---")
-    st.markdown("##Lucro líquido real da empresa")
+    st.markdown("## Lucro líquido real da empresa")
 
     try:
         despesas_result = supabase.table("despesas_gerais").select("valor").execute()
