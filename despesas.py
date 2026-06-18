@@ -13,6 +13,8 @@ CATEGORIAS_DESPESA = [
     "Outro",
 ]
 
+FREQUENCIAS = ["Mensal", "Anual"]
+
 
 def render_despesas(supabase):
     st.subheader("Despesas Gerais da Empresa")
@@ -118,7 +120,7 @@ def render_despesas(supabase):
     st.markdown("---")
     st.markdown("### ✏️ Editar ou excluir despesa")
 
-    opcoes = {f"{d['id']} — {d['descricao']} (R$ {d['valor']:.2f})": d for d in despesas}
+    opcoes = {f"{d['id']} — {d['descricao']} (R$ {float(d.get('valor') or 0):.2f})": d for d in despesas}
     selecao = st.selectbox("Selecione a despesa", options=["—"] + list(opcoes.keys()), key="edit_despesa_select")
 
     if selecao != "—":
@@ -134,7 +136,7 @@ def render_despesas(supabase):
                 valor_e = st.number_input("Valor (R$)", min_value=0.0, step=10.0, value=float(despesa.get("valor") or 0))
                 data_despesa_e = st.date_input(
                     "Data da despesa",
-                    value=date.fromisoformat(despesa["data_despesa"]) if despesa.get("data_despesa") else date.today()
+                    value=pd.to_datetime(despesa["data_despesa"]).date() if despesa.get("data_despesa") else date.today()
                 )
                 recorrente_e = st.checkbox("Despesa recorrente", value=despesa.get("recorrente") or False)
                 idx_freq = FREQUENCIAS.index(despesa["frequencia"]) if despesa.get("frequencia") in FREQUENCIAS else 0
