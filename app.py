@@ -9,6 +9,7 @@ from groq import Groq
 from anthropic import Anthropic
 from analytics import render_analytics
 from agenda import render_agenda
+from calendario import render_calendario
 
 
 st.set_page_config(page_title="AXIOM Painel", page_icon="◆", layout="wide")
@@ -127,7 +128,11 @@ with tab_servicos:
         render_despesas(supabase)
 
 with tab_agenda:
-    render_agenda(supabase)
+    sub_tab_lista, sub_tab_calendario = st.tabs(["📋 Lista e Métricas", "📅 Calendário"])
+    with sub_tab_lista:
+        render_agenda(supabase)
+    with sub_tab_calendario:
+        render_calendario(supabase)
             
 
 with tab_analytics:
