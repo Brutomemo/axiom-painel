@@ -190,7 +190,7 @@ def render_agenda(supabase):
         st.caption(f"📌 {len(multi_dia)} compromisso(s) atravessam mais de um dia e estão refletidos corretamente na linha do tempo e no total de horas.")
 
     st.markdown("---")
-    st.markdown("### ✏️ Editar ou excluir compromisso")
+    st.markdown("### Editar ou excluir compromisso")
 
     opcoes = {f"{c['id']} — {c['titulo']} ({c['lider']})": c for c in compromissos}
     selecao = st.selectbox("Selecione o compromisso", options=["—"] + list(opcoes.keys()), key="edit_compromisso_select")
