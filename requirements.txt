@@ -12,4 +12,4 @@ anthropic==0.25.0
 matplotlib>=3.10.0,<4
 pyvis==0.3.2
 networkx==3.3
-streamlit-calendar
+streamlit-calendar==1.4.0
