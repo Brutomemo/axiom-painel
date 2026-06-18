@@ -111,8 +111,8 @@ def render_analytics(supabase):
             origem_counts, names="origem", values="quantidade",
             color="origem",
             color_discrete_map={
-                "strategic-intelligence": "#06b6d4",
-                "human-performance": "#a855f7",
+                "strategic-intelligence": "#d47406",
+                "human-performance": "#11c5fc",
             },
             hole=0.4,
         )
