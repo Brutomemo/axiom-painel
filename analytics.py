@@ -61,16 +61,27 @@ def render_analytics(supabase):
     col_d.metric("Concluídos", (df_f["status"] == "concluído").sum())
 
     st.markdown("### Financeiro")
+
+    try:
+        despesas_gerais_result = supabase.table("despesas_gerais").select("valor").execute()
+        total_despesas_gerais = sum(d.get("valor") or 0 for d in despesas_gerais_result.data)
+    except Exception:
+        total_despesas_gerais = 0
+
     bruto = df_f["preco_cobrado"].fillna(0).sum()
-    despesas = df_f["custos_projeto"].fillna(0).sum()
-    liquido = df_f["lucro"].fillna(0).sum()
+    despesas_projetos = df_f["custos_projeto"].fillna(0).sum()
+    despesas = despesas_projetos + total_despesas_gerais
+    liquido = bruto - despesas
     mrr = df_f["mensalidade"].fillna(0).sum()
     margem = (liquido / bruto * 100) if bruto > 0 else 0
     ticket_medio = bruto / len(df_f) if len(df_f) > 0 else 0
 
     col_e, col_f, col_g, col_h = st.columns(4)
     col_e.metric("Faturamento bruto", f"R$ {bruto:,.2f}")
-    col_f.metric("Despesas totais", f"R$ {despesas:,.2f}")
+    col_f.metric(
+        "Despesas totais", f"R$ {despesas:,.2f}",
+        help=f"Projetos: R$ {despesas_projetos:,.2f} + Operação da empresa: R$ {total_despesas_gerais:,.2f}"
+    )
     col_g.metric("Lucro líquido", f"R$ {liquido:,.2f}")
     col_h.metric("Receita recorrente (MRR)", f"R$ {mrr:,.2f}")
 
