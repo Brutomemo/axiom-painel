@@ -10,13 +10,13 @@ TIPOS_COMPROMISSO = [
 STATUS_COMPROMISSO = ["Agendado", "Em andamento", "Concluído", "Cancelado"]
 
 
-def calcular_duracao_horas(hora_inicio, hora_fim):
-    if not hora_inicio or not hora_fim:
+def calcular_duracao_horas(data_inicio, hora_inicio, data_fim, hora_fim):
+    if not hora_inicio or not hora_fim or not data_inicio or not data_fim:
         return None
-    inicio = datetime.combine(date.today(), hora_inicio)
-    fim = datetime.combine(date.today(), hora_fim)
+    inicio = datetime.combine(data_inicio, hora_inicio)
+    fim = datetime.combine(data_fim, hora_fim)
     if fim < inicio:
-        fim += pd.Timedelta(days=1)
+        return None
     return round((fim - inicio).total_seconds() / 3600, 2)
 
 
@@ -39,8 +39,13 @@ def render_agenda(supabase):
                 tipo = st.selectbox("Tipo", TIPOS_COMPROMISSO)
                 servico_label = st.selectbox("Vincular a um serviço (opcional)", ["—"] + list(servicos_opcoes.keys()))
             with col2:
-                data_compromisso = st.date_input("Data", value=date.today())
+                data_inicio_compromisso = st.date_input("Data de início", value=date.today())
                 hora_inicio = st.time_input("Hora de início", value=time(9, 0))
+                multiplos_dias = st.checkbox("Compromisso em mais de um dia")
+                if multiplos_dias:
+                    data_fim_compromisso = st.date_input("Data de término", value=date.today())
+                else:
+                    data_fim_compromisso = data_inicio_compromisso
                 hora_fim = st.time_input("Hora de término", value=time(10, 0))
                 status = st.selectbox("Status", STATUS_COMPROMISSO)
 
@@ -50,6 +55,8 @@ def render_agenda(supabase):
             if submitted:
                 if not lider or not titulo:
                     st.warning("Informe ao menos o líder responsável e o título do compromisso.")
+                elif data_fim_compromisso < data_inicio_compromisso:
+                    st.warning("A data de término não pode ser anterior à data de início.")
                 else:
                     servico_id = servicos_opcoes.get(servico_label) if servico_label != "—" else None
                     try:
@@ -57,7 +64,8 @@ def render_agenda(supabase):
                             "lider": lider,
                             "titulo": titulo,
                             "tipo": tipo,
-                            "data": data_compromisso.isoformat(),
+                            "data": data_inicio_compromisso.isoformat(),
+                            "data_fim": data_fim_compromisso.isoformat(),
                             "hora_inicio": hora_inicio.isoformat(),
                             "hora_fim": hora_fim.isoformat(),
                             "status": status,
@@ -83,16 +91,21 @@ def render_agenda(supabase):
 
     df = pd.DataFrame(compromissos)
     df["data"] = pd.to_datetime(df["data"], errors="coerce")
+    df["data_fim"] = pd.to_datetime(df.get("data_fim"), errors="coerce")
+    df["data_fim"] = df["data_fim"].fillna(df["data"])
 
     def calc_horas(row):
         try:
+            data_ini = row["data"].date()
+            data_fim_row = row["data_fim"].date()
             hi = datetime.strptime(str(row["hora_inicio"]), "%H:%M:%S").time()
             hf = datetime.strptime(str(row["hora_fim"]), "%H:%M:%S").time()
-            return calcular_duracao_horas(hi, hf)
+            return calcular_duracao_horas(data_ini, hi, data_fim_row, hf)
         except Exception:
             return None
 
     df["horas"] = df.apply(calc_horas, axis=1)
+    df["multiplos_dias"] = df["data_fim"].dt.date != df["data"].dt.date
 
     col_a, col_b, col_c = st.columns(3)
     col_a.metric("Total de compromissos", len(df))
@@ -145,14 +158,14 @@ def render_agenda(supabase):
         st.plotly_chart(fig_tipo, use_container_width=True)
 
     st.markdown("**Linha do tempo dos compromissos**")
-    df_timeline = df_f.dropna(subset=["data"]).copy()
+    df_timeline = df_f.dropna(subset=["data", "data_fim"]).copy()
     if not df_timeline.empty:
         try:
             df_timeline["inicio_dt"] = pd.to_datetime(
                 df_timeline["data"].dt.date.astype(str) + " " + df_timeline["hora_inicio"].astype(str)
             )
             df_timeline["fim_dt"] = pd.to_datetime(
-                df_timeline["data"].dt.date.astype(str) + " " + df_timeline["hora_fim"].astype(str)
+                df_timeline["data_fim"].dt.date.astype(str) + " " + df_timeline["hora_fim"].astype(str)
             )
             fig_gantt = px.timeline(
                 df_timeline, x_start="inicio_dt", x_end="fim_dt", y="lider",
@@ -172,6 +185,10 @@ def render_agenda(supabase):
     else:
         st.info("Sem compromissos suficientes para a linha do tempo.")
 
+    multi_dia = df_f[df_f["multiplos_dias"]]
+    if not multi_dia.empty:
+        st.caption(f"📌 {len(multi_dia)} compromisso(s) atravessam mais de um dia e estão refletidos corretamente na linha do tempo e no total de horas.")
+
     st.markdown("---")
     st.markdown("### ✏️ Editar ou excluir compromisso")
 
@@ -180,6 +197,10 @@ def render_agenda(supabase):
 
     if selecao != "—":
         compromisso = opcoes[selecao]
+        data_inicio_atual = compromisso.get("data")
+        data_fim_atual = compromisso.get("data_fim") or data_inicio_atual
+        eh_multiplos_dias_atual = data_fim_atual != data_inicio_atual
+
         with st.form("editar_compromisso"):
             col1, col2 = st.columns(2)
             with col1:
@@ -188,15 +209,23 @@ def render_agenda(supabase):
                 idx_tipo = TIPOS_COMPROMISSO.index(compromisso["tipo"]) if compromisso.get("tipo") in TIPOS_COMPROMISSO else 0
                 tipo_e = st.selectbox("Tipo", TIPOS_COMPROMISSO, index=idx_tipo)
             with col2:
-                data_e = st.date_input(
-                    "Data",
-                    value=date.fromisoformat(str(compromisso["data"])[:10]) if compromisso.get("data") else date.today()
+                data_inicio_e = st.date_input(
+                    "Data de início",
+                    value=date.fromisoformat(str(data_inicio_atual)[:10]) if data_inicio_atual else date.today()
                 )
                 hora_inicio_e = st.time_input(
                     "Hora de início",
                     value=datetime.strptime(str(compromisso["hora_inicio"]), "%H:%M:%S").time()
                     if compromisso.get("hora_inicio") else time(9, 0)
                 )
+                multiplos_dias_e = st.checkbox("Compromisso em mais de um dia", value=eh_multiplos_dias_atual)
+                if multiplos_dias_e:
+                    data_fim_e = st.date_input(
+                        "Data de término",
+                        value=date.fromisoformat(str(data_fim_atual)[:10]) if data_fim_atual else date.today()
+                    )
+                else:
+                    data_fim_e = data_inicio_e
                 hora_fim_e = st.time_input(
                     "Hora de término",
                     value=datetime.strptime(str(compromisso["hora_fim"]), "%H:%M:%S").time()
@@ -212,21 +241,25 @@ def render_agenda(supabase):
             deletar = col_delete.form_submit_button("🗑️ Excluir compromisso")
 
             if salvar:
-                try:
-                    supabase.table("agenda_compromissos").update({
-                        "lider": lider_e,
-                        "titulo": titulo_e,
-                        "tipo": tipo_e,
-                        "data": data_e.isoformat(),
-                        "hora_inicio": hora_inicio_e.isoformat(),
-                        "hora_fim": hora_fim_e.isoformat(),
-                        "status": status_e,
-                        "observacoes": observacoes_e,
-                    }).eq("id", compromisso["id"]).execute()
-                    st.success("Compromisso atualizado!")
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Erro ao atualizar: {e}")
+                if data_fim_e < data_inicio_e:
+                    st.warning("A data de término não pode ser anterior à data de início.")
+                else:
+                    try:
+                        supabase.table("agenda_compromissos").update({
+                            "lider": lider_e,
+                            "titulo": titulo_e,
+                            "tipo": tipo_e,
+                            "data": data_inicio_e.isoformat(),
+                            "data_fim": data_fim_e.isoformat(),
+                            "hora_inicio": hora_inicio_e.isoformat(),
+                            "hora_fim": hora_fim_e.isoformat(),
+                            "status": status_e,
+                            "observacoes": observacoes_e,
+                        }).eq("id", compromisso["id"]).execute()
+                        st.success("Compromisso atualizado!")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Erro ao atualizar: {e}")
 
             if deletar:
                 try:
@@ -238,6 +271,6 @@ def render_agenda(supabase):
 
     st.markdown("---")
     st.markdown(f"**Histórico completo** ({len(df_f)} compromisso(s))")
-    colunas_exibir = ["data", "lider", "titulo", "tipo", "hora_inicio", "hora_fim", "horas", "status"]
+    colunas_exibir = ["data", "data_fim", "lider", "titulo", "tipo", "hora_inicio", "hora_fim", "horas", "status"]
     colunas_existentes = [c for c in colunas_exibir if c in df_f.columns]
     st.dataframe(df_f[colunas_existentes].sort_values("data", ascending=False), use_container_width=True, hide_index=True)
