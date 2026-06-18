@@ -257,7 +257,7 @@ def render_analytics(supabase):
     st.markdown("---")
 
     st.markdown("---")
-    st.markdown("## Lucro líquido real da empresa")
+    st.markdown("#### Lucro líquido real da empresa")
 
     try:
         despesas_result = supabase.table("despesas_gerais").select("valor").execute()
