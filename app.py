@@ -8,6 +8,7 @@ from conversas import render_conversas
 from groq import Groq
 from anthropic import Anthropic
 from analytics import render_analytics
+from agenda import render_agenda
 
 
 st.set_page_config(page_title="AXIOM Painel", page_icon="◆", layout="wide")
@@ -105,8 +106,8 @@ supabase = get_supabase()
 
 render_header()
 
-tab_emails, tab_leads, tab_chat, tab_servicos, tab_analytics = st.tabs(
-    ["📧 E-mails", "🎯 Leads", "💬 Conversas", "🛠️ Serviços", "📊 Analytics"]
+tab_emails, tab_leads, tab_chat, tab_servicos, tab_agenda, tab_analytics = st.tabs(
+    ["📧 E-mails", "🎯 Leads", "💬 Conversas", "🛠️ Serviços", "📅 Agenda", "📊 Analytics"]
 )
 
 with tab_emails:
@@ -124,6 +125,10 @@ with tab_servicos:
         render_servicos(supabase)
     with sub_tab_despesas:
         render_despesas(supabase)
+
+with tab_agenda:
+    render_agenda(supabase)
+            
 
 with tab_analytics:
     render_analytics(supabase)
