@@ -104,7 +104,7 @@ def render_despesas(supabase):
             fig_tempo.update_layout(
                 paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
                 font_color="#94a3b8",
-                xaxis=dict(gridcolor="#1a2035"), yaxis=dict(gridcolor="#1a2035"),
+                xaxis=dict(gridcolor="##94a3b8"), yaxis=dict(gridcolor="#94a3b8"),
                 height=320,
             )
             st.plotly_chart(fig_tempo, use_container_width=True)
