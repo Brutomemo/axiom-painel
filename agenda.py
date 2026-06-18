@@ -205,7 +205,14 @@ def render_agenda(supabase):
         compromisso = opcoes[selecao]
         data_inicio_atual = compromisso.get("data")
         data_fim_atual = compromisso.get("data_fim") or data_inicio_atual
-        eh_multiplos_dias_atual = data_fim_atual != data_inicio_atual
+        eh_multiplos_dias_atual = str(data_fim_atual)[:10] != str(data_inicio_atual)[:10]
+
+        # Checkbox FORA do form para reagir imediatamente ao clique
+        multiplos_dias_e = st.checkbox(
+            "Compromisso em mais de um dia",
+            value=eh_multiplos_dias_atual,
+            key="edit_multiplos_dias"
+        )
 
         with st.form("editar_compromisso"):
             col1, col2 = st.columns(2)
@@ -224,11 +231,11 @@ def render_agenda(supabase):
                     value=datetime.strptime(str(compromisso["hora_inicio"]), "%H:%M:%S").time()
                     if compromisso.get("hora_inicio") else time(9, 0)
                 )
-                multiplos_dias_e = st.checkbox("Compromisso em mais de um dia", value=eh_multiplos_dias_atual)
                 if multiplos_dias_e:
                     data_fim_e = st.date_input(
                         "Data de término",
-                        value=date.fromisoformat(str(data_fim_atual)[:10]) if data_fim_atual else date.today()
+                        value=date.fromisoformat(str(data_fim_atual)[:10]) if data_fim_atual else date.today(),
+                        key="data_fim_edit"
                     )
                 else:
                     data_fim_e = data_inicio_e
