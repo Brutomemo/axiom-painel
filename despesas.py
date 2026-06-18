@@ -100,7 +100,7 @@ def render_despesas(supabase):
         if not df_tempo.empty:
             df_tempo["mes"] = df_tempo["data_despesa"].dt.to_period("M").astype(str)
             mensal = df_tempo.groupby("mes")["valor"].sum().reset_index()
-            fig_tempo = px.bar(mensal, x="mes", y="valor", color_discrete_sequence=["#a855f7"])
+            fig_tempo = px.line(mensal, x="mes", y="valor", color_discrete_sequence=["#94a3b8"], markers=True)
             fig_tempo.update_layout(
                 paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
                 font_color="#94a3b8",
