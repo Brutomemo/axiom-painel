@@ -245,6 +245,22 @@ def render_analytics(supabase):
 
     st.markdown("---")
 
+    st.markdown("---")
+    st.markdown("### 💰 Lucro líquido real da empresa")
+
+    try:
+        despesas_result = supabase.table("despesas_gerais").select("valor").execute()
+        total_despesas_gerais = sum(d.get("valor") or 0 for d in despesas_result.data)
+    except Exception:
+        total_despesas_gerais = 0
+
+    lucro_real = liquido - total_despesas_gerais
+
+    col_x, col_y, col_z = st.columns(3)
+    col_x.metric("Lucro dos projetos", f"R$ {liquido:,.2f}")
+    col_y.metric("Despesas gerais da empresa", f"R$ {total_despesas_gerais:,.2f}")
+    col_z.metric("Lucro líquido real", f"R$ {lucro_real:,.2f}")
+
     # ── TABELA DETALHADA ──
     st.markdown(f"**Detalhamento** ({len(df_f)} serviço(s))")
     colunas_exibir = [

@@ -1,12 +1,14 @@
 import streamlit as st
 from style import apply_axiom_style, render_header, render_footer
 from servicos import render_servicos
+from despesas import render_despesas
 from emails import render_emails
 from leads import render_leads
 from conversas import render_conversas
 from groq import Groq
 from anthropic import Anthropic
 from analytics import render_analytics
+
 
 st.set_page_config(page_title="AXIOM Painel", page_icon="◆", layout="wide")
 apply_axiom_style()
@@ -117,7 +119,11 @@ with tab_chat:
     render_conversas(supabase, groq_client, anthropic_client)
 
 with tab_servicos:
-    render_servicos(supabase)
+    sub_tab_projetos, sub_tab_despesas = st.tabs(["Projetos de Clientes", "Despesas Gerais"])
+    with sub_tab_projetos:
+        render_servicos(supabase)
+    with sub_tab_despesas:
+        render_despesas(supabase)
 
 with tab_analytics:
     render_analytics(supabase)
