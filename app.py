@@ -128,10 +128,16 @@ with tab_servicos:
         render_despesas(supabase)
 
 with tab_agenda:
-    sub_tab_lista, sub_tab_calendario = st.tabs(["📋 Lista e Métricas", "📅 Calendário"])
-    with sub_tab_lista:
+    visao_agenda = st.radio(
+        "Visualização",
+        ["📋 Lista e Métricas", "📅 Calendário"],
+        horizontal=True,
+        key="agenda_view_selector",
+    )
+    st.markdown("")
+    if visao_agenda == "📋 Lista e Métricas":
         render_agenda(supabase)
-    with sub_tab_calendario:
+    else:
         render_calendario(supabase)
             
 
